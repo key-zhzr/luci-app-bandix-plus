@@ -116,9 +116,16 @@ return view.extend({
 		o.depends({ tc_backend: 'tcx', tc_order: 'before' });
 		o.depends({ tc_backend: 'tcx', tc_order: 'after' });
 
-		o = s.option(form.Flag, 'traffic_enable_storage', _('Enable traffic persistence storage'), _('Persist traffic histogram/ring data to disk. Disabled by default.'));
+		o = s.option(form.Flag, 'traffic_enable_storage', _('Enable traffic persistence storage'), _('Persist traffic history data to disk. Disabled by default.'));
 		o.default = '0';
 		o.rmempty = false;
+
+		o = s.option(form.Value, 'traffic_retention_days', _('Traffic retention days'), _('Number of days to keep persisted hourly traffic data. Set 0 to keep forever.'));
+		o.datatype = 'uinteger';
+		o.placeholder = '366';
+		o.default = '366';
+		o.rmempty = false;
+		o.depends('traffic_enable_storage', '1');
 
 		o = s.option(form.Value, 'host', _('Host'));
 		o.placeholder = '127.0.0.1';
