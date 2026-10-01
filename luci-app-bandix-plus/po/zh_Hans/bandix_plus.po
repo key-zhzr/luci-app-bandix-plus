@@ -691,3 +691,12 @@ msgstr "有更新"
 
 msgid "Update available, click to go to settings"
 msgstr "有更新，点击前往设置"
+
+msgid "Persist traffic history data to disk. Disabled by default."
+msgstr "将流量历史数据持久化到磁盘，默认关闭。"
+
+msgid "Traffic retention days"
+msgstr "流量保留天数"
+
+msgid "Number of days to keep persisted hourly traffic data. Set 0 to keep forever."
+msgstr "持久化小时流量数据的保留天数；设为 0 表示永久保留。"
