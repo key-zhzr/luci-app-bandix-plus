@@ -4,11 +4,36 @@
 'require ui';
 'require uci';
 'require rpc';
+'require poll';
+'require dom';
 'require tools.widgets as widgets';
 
 var callRestartService = rpc.declare({ object: 'luci.bandix_plus', method: 'restartService', expect: {} });
 var callGetVersion = rpc.declare({ object: 'luci.bandix_plus', method: 'getVersion', expect: {} });
 var callCheckUpdate = rpc.declare({ object: 'luci.bandix_plus', method: 'checkUpdate', expect: {} });
+var callGetBpfMaps = rpc.declare({ object: 'luci.bandix_plus', method: 'getBpfMaps', expect: {} });
+
+function bpfStatusContent(result) {
+	if (!result || !result.ok || !result.data)
+		return E('p', { 'class': 'alert-message warning' }, _('BPF map status unavailable'));
+	var status = result.data;
+	var rows = [ E('tr', { 'class': 'tr table-titles' }, [
+		E('th', { 'class': 'th' }, _('BPF map')),
+		E('th', { 'class': 'th' }, _('Entries / capacity'))
+	]) ];
+	(status.maps || []).forEach(function (map) {
+		rows.push(E('tr', { 'class': 'tr' + (map.near_capacity ? ' warning' : '') }, [
+			E('td', { 'class': 'td' }, map.name),
+			E('td', { 'class': 'td' }, String(map.entries) + ' / ' + String(map.max_entries) +
+				(map.near_capacity ? ' — ' + _('Near capacity') : ''))
+		]));
+	});
+	return E('div', {}, [
+		E('p', {}, _('Loaded BPF capacity') + ': ' + String(status.configured_max_entries)),
+		E('table', { 'class': 'table' }, rows),
+		E('p', { 'class': 'cbi-value-description' }, _('Counts are approximate and refresh every 10 seconds. Capacity is per map, not a device count.'))
+	]);
+}
 
 return view.extend({
 	load: function () {
@@ -25,12 +50,14 @@ return view.extend({
 					bandix_plus_version: _('Unknown')
 				};
 				return null;
-			})
+			}),
+			callGetBpfMaps().then(function (result) { self.bpfMaps = result; }).catch(function () { self.bpfMaps = null; })
 		]);
 	},
 
 	render: function () {
 		var m, s, o;
+		var self = this;
 		var versionInfo = this.versionInfo || {};
 
 		if (!uci.get('bandix_plus', 'general')) {
@@ -46,6 +73,22 @@ return view.extend({
 		o = s.option(form.Flag, 'enable_traffic', _('Enable traffic collection'), _('When disabled, bandix-plus service will not start.'));
 		o.default = '1';
 		o.rmempty = false;
+
+		o = s.option(form.Value, 'bpf_map_max_entries', _('BPF map capacity'), _('Maximum entries in each of the seven BPF maps. 4096 is suitable for small LANs; 65536 preserves the previous capacity. Applying changes restarts Bandix Plus.'));
+		[ '1024', '4096', '8192', '16384', '65536' ].forEach(function (value) { o.value(value, value); });
+		o.datatype = 'and(uinteger,range(1024,65536))';
+		o.default = '65536';
+		o.rmempty = false;
+
+		var bpfStatusNode = E('div', {}, [ bpfStatusContent(this.bpfMaps) ]);
+		o = s.option(form.DummyValue, '_bpf_runtime', _('Runtime BPF maps'));
+		o.renderWidget = function () { return bpfStatusNode; };
+		poll.add(function () {
+			return callGetBpfMaps().then(function (result) {
+				self.bpfMaps = result;
+				dom.content(bpfStatusNode, bpfStatusContent(result));
+			}).catch(function () { dom.content(bpfStatusNode, bpfStatusContent(null)); });
+		}, 10);
 
 		o = s.option(widgets.DeviceSelect, 'iface', _('Interface to monitor'), _('Select one or more interfaces to monitor.'));
 		o.multiple = true;
@@ -276,11 +319,5 @@ return view.extend({
 		};
 
 		return m.render();
-	},
-
-	handleSaveApply: function (ev, mode) {
-		return this.super('handleSaveApply', [ev, mode]).then(function () {
-			return callRestartService().catch(function(e) { console.error('Restart failed', e); });
-		});
 	}
 });
