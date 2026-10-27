@@ -691,3 +691,39 @@ msgstr "有更新"
 
 msgid "Update available, click to go to settings"
 msgstr "有更新，點擊前往設定"
+
+msgid "Persist traffic history data to disk. Disabled by default."
+msgstr "將流量歷史資料持久化到磁碟，預設關閉。"
+
+msgid "Traffic retention days"
+msgstr "流量保留天數"
+
+msgid "Number of days to keep persisted hourly traffic data. Set 0 to keep forever."
+msgstr "持久化每小時流量資料的保留天數；設為 0 表示永久保留。"
+
+msgid "BPF map capacity"
+msgstr "BPF 表容量"
+
+msgid "Maximum entries in each of the seven BPF maps. 4096 is suitable for small LANs; 65536 preserves the previous capacity. Applying changes restarts Bandix Plus."
+msgstr "七张 BPF 表各自的最大条目数。小型局域网建议使用 4096；65536 保持原有容量。应用修改会重启 Bandix Plus。"
+
+msgid "Runtime BPF maps"
+msgstr "BPF 表运行情况"
+
+msgid "BPF map status unavailable"
+msgstr "暂时无法读取 BPF 表状态"
+
+msgid "BPF map"
+msgstr "BPF 表"
+
+msgid "Entries / capacity"
+msgstr "已用条目 / 容量"
+
+msgid "Near capacity"
+msgstr "接近容量上限"
+
+msgid "Loaded BPF capacity"
+msgstr "当前已加载的 BPF 容量"
+
+msgid "Counts are approximate and refresh every 10 seconds. Capacity is per map, not a device count."
+msgstr "条目数为近似值，每 10 秒刷新。容量针对每张表，不代表设备数量。"

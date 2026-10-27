@@ -5,6 +5,7 @@
 			"ubus": {
 				"luci.bandix_plus": [
 					"getHealth",
+					"getBpfMaps",
 					"getSnapshot",
 					"getOverview",
 					"getDevices",
@@ -35,6 +36,7 @@
 			"ubus": {
 				"luci.bandix_plus": [
 					"getHealth",
+					"getBpfMaps",
 					"getSnapshot",
 					"getOverview",
 					"getDevices",
